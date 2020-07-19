@@ -1,5 +1,7 @@
 var http = require("http");
 var fs = require("fs");
+const sqlite3 = require('sqlite3').verbose();
+const db = new sqlite3.Database('test.db');
 
 var error404 = "not_found.html";
 var error = "";
@@ -11,14 +13,36 @@ try {
 }
 
 var count = 0;
+var text = "";
 
 //create a server object:
 http
-  .createServer(function(req, res) {
+  .createServer(function (req, res) {
     let url = req["url"];
     switch (true) {
+      case /db$/.test(url):
+        res.writeHead(200, {
+          "Content-Type": "text/html; charset=utf-8"
+        });
+        res.write("<html><body><table>");
+
+        db.serialize(() => {
+          db.each("SELECT id, 都道府県, 人口 FROM example;", (error, row) => {
+            if (error) {
+              console.log('Error: ', error);
+              return;
+            }
+            text += "<tr><td>" + row.id + "</td><td>" + row.都道府県 + "</td><td>" + row.人口 + "</td></tr>";
+          });
+        });
+        res.write(text);
+        res.write("</table></body></html>");
+        break;
       case /counter$/.test(url):
         count++;
+        res.writeHead(200, {
+          "Content-Type": "text/html; charset=utf-8"
+        });
         res.write(
           "<html><body>あなたは" + count + "番目の来場者です</body></html>"
         );
