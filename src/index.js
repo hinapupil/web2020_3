@@ -24,15 +24,15 @@ http
         res.writeHead(200, {
           "Content-Type": "text/html; charset=utf-8"
         });
-        res.write("<html><body><table>");
+        res.write("<html><body><table border>");
 
         db.serialize(() => {
-          db.each("SELECT id, 都道府県, 人口 FROM example;", (error, row) => {
+          db.each("select id, 都道府県, cast(学生数 as real) * 100 / cast(人口 as real) as result from example order by result desc limit 10;", (error, row) => {
             if (error) {
               console.log('Error: ', error);
               return;
             }
-            text += "<tr><td>" + row.id + "</td><td>" + row.都道府県 + "</td><td>" + row.人口 + "</td></tr>";
+            text += "<tr><td>" + row.id + "</td><td>" + row.都道府県 + "</td><td>" + row.result + "</td></tr>";
           });
         });
         res.write(text);
